@@ -1,0 +1,18 @@
+# min/maxticks (ideally 20 per second?)
+# allows for random regrowth variation
+sheepfood:
+    id297:
+        name: Bread
+        minticks: 100
+        maxticks: 300
+        healamount: 2
+    id296:
+        name: Wheat
+        minticks: 200
+        maxticks: 500
+        healamount: 1
+    id295:
+        name: Seeds
+        minticks: 300
+        maxticks: 700
+        healamount: 1
