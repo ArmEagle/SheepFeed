@@ -68,13 +68,19 @@ public class SheepFeed extends JavaPlugin {
         	wGTIDitr.remove();
         }
         SheepFeed.debug("growing sheep left: "+ this.woolGrowingSheep.size() +", should not be > 0");
+        
+        // clear configuration, saving memory
+        this.config = null;
 	}
 
 	@Override
 	public void onEnable() {		
 		PluginDescriptionFile pdfFile = this.getDescription();
         log.info( pdfFile.getName() + " version " + pdfFile.getVersion() + " by "+ pdfFile.getAuthors().get(0) +" is enabled!" );
-        
+
+        // load configuration, this way dis&enabling the plugin will read changes in the config file
+		this.config = new SheepFeedConfig(this);
+		
         // only register event listeners once
         //TODO will need to unregister the listeners when that feature is added 
         if ( !this.hasRegisteredEventListeners ) {
@@ -111,7 +117,6 @@ public class SheepFeed extends JavaPlugin {
 	@Override
 	public void onLoad() {
 		this.scheduler = this.getServer().getScheduler();
-		this.config = new SheepFeedConfig(this);
 		this.entityListener = new SheepFeedEntityListener(this);
 	}
 /*
