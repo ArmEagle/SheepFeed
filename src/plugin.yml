@@ -1,6 +1,6 @@
 name: SheepFeed
 main: nl.armeagle.minecraft.SheepFeed.SheepFeed
-version: 1.1
+version: 1.2
 author: ArmEagle
 description: Allows you to feed sheep which makes them grow back their wool after some time. Use the config file to change the food items and stats.
 commands:
