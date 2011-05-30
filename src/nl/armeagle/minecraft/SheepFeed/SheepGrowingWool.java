@@ -22,8 +22,11 @@ public class SheepGrowingWool implements Runnable {
 			return;
 		}
 		// reset color if not natural
-		DyeColor color = SheepGrowingWool.regrowthColor(this.sheep.getColor());
-		this.sheep.setColor(color);
+		if ( !this.sheepFeedPlugin.config.isRegrowColor(this.sheep.getColor()) ) {
+			this.sheep.setColor(DyeColor.WHITE);
+		}
+		//DyeColor color = SheepGrowingWool.regrowthColor(this.sheep.getColor());
+		
 		
 		// give back wool
 		sheep.setSheared(false);

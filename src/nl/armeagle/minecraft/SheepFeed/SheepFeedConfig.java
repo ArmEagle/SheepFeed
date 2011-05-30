@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
 
+import org.bukkit.DyeColor;
 import org.bukkit.util.config.Configuration;
 
 public class SheepFeedConfig {
@@ -52,7 +53,7 @@ public class SheepFeedConfig {
 	                while ((length = input.read(buf)) > 0) {
 	                    output.write(buf, 0, length);
 	                }
-	                SheepFeed.log.info(this.sheepFeedPlugin.getDescription().getName() + ": Default configuration file written: " + configFile.getPath());
+	                SheepFeed.log("Default configuration file written: " + configFile.getPath());
 	            } catch (IOException e) {
 	                e.printStackTrace();
 	            } finally {
@@ -109,5 +110,30 @@ public class SheepFeedConfig {
 			foodIDs.add(Integer.parseInt(foodElement.replace("id", "")));
 		}
 		return foodIDs;
+	}
+	
+	/**
+	 * Return whether the given color is configured to be a color that is a valid (natural) color for wool to regrow. 
+	 * @param dyeColor
+	 * @return True if it is a valid color to be regrown.
+	 */
+	public boolean isRegrowColor(DyeColor dyeColor) {
+		List<String> regrowColors = this.config.getStringList("regrowcolors", null);
+		if ( regrowColors == null || regrowColors.size() == 0 ) {
+			SheepFeed.log("config.yml is outdated, missing 'regrowcolors' entry.");
+			// revert to old check, with brown added
+			switch ( dyeColor ) {
+			case WHITE:
+			case BLACK:
+			case GRAY:
+			case SILVER:
+			case BROWN:
+				return true;
+			default:
+				return false;
+			}
+		} else {
+			return regrowColors.contains(dyeColor.toString());
+		}
 	}
 }

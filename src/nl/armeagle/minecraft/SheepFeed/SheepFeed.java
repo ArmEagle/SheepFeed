@@ -1,9 +1,9 @@
 package nl.armeagle.minecraft.SheepFeed;
 
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
 import org.bukkit.command.Command;
@@ -33,7 +33,7 @@ import org.bukkit.scheduler.BukkitScheduler;
 
 public class SheepFeed extends JavaPlugin {
 	public static final boolean debug = false;
-	public static final Logger log = Logger.getLogger("Minecraft");
+	private static final Logger log = Logger.getLogger("Minecraft");
 	
 	//	private final SheepFeedPlayerListener playerListener = new SheepFeedPlayerListener(this);
 	private SheepFeedEntityListener entityListener;
@@ -51,7 +51,7 @@ public class SheepFeed extends JavaPlugin {
 	// Store sheep that are hit (once)
 	// TODO lazy, probably not really memory efficient
 	//private ArrayList<Sheep> nakedSheep = new ArrayList<Sheep>();
-	private HashMap<Sheep, Integer> woolGrowingSheep = new HashMap<Sheep, Integer>();
+	private ConcurrentHashMap<Sheep, Integer> woolGrowingSheep = new ConcurrentHashMap<Sheep, Integer>();
 
 	
 	@Override
@@ -119,33 +119,6 @@ public class SheepFeed extends JavaPlugin {
 		this.scheduler = this.getServer().getScheduler();
 		this.entityListener = new SheepFeedEntityListener(this);
 	}
-/*
-	public void addNakedSheep(Sheep sheep) {
-		this.nakedSheep.add(sheep);
-		SheepFeed.debug("NakedSheep: added a sheep, now storing: "+ this.nakedSheep.size());
-	}
-	*/
-	/**
-	 * Remove the sheep from the nakedSheep list
-	 * @param sheep
-	 *
-	 */
-	/*
-	public void removeNakedSheep(Sheep sheep) {
-		this.nakedSheep.remove(sheep);
-		SheepFeed.debug("NakedSheep: removed a sheep, now storing: "+ this.nakedSheep.size());
-	}
-	*/
-	/**
-	 * To check whether a sheep is in the nakedSheep list
-	 * @param sheep
-	 * @return true if the sheep is in the list
-	 */
-	/*
-	public boolean isNakedSheep(Sheep sheep) {
-		return this.nakedSheep.contains(sheep);
-	}
-	*/
 	/**
 	 * To check whether a sheep is currently growing wool
 	 * @param sheep
@@ -155,14 +128,14 @@ public class SheepFeed extends JavaPlugin {
 		return this.woolGrowingSheep.containsKey(sheep);
 	}
 	/**
-	 * Remove the sheep from the growin list
+	 * Remove the sheep from the growing list
 	 * @param sheep
 	 */
 	public void removeWoolGrowingSheep(Sheep sheep) {
 		this.woolGrowingSheep.remove(sheep);
 	}
 	/**
-	 * Used to handle a sheep dieing. To remove from naked/wool growing list and
+	 * Used to handle a sheep dying. To remove from naked/wool growing list and
 	 *  cancel task if the latter.
 	 * @param sheep
 	 */
@@ -192,5 +165,9 @@ public class SheepFeed extends JavaPlugin {
 		if ( SheepFeed.debug ) {
 			log.info("SheepFeed DEBUG: "+ string);
 		}
+	}
+	
+	public static void log(String string) {
+		log.info("Sheepfeed: "+ string);
 	}
 }
