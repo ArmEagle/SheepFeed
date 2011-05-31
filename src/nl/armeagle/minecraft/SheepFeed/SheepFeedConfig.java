@@ -73,6 +73,21 @@ public class SheepFeedConfig {
 		}
 		this.config = new Configuration(configFile);
 		this.config.load();
+		
+
+		// Check for config to hold regrowColors
+		List<String> regrowColors = this.config.getStringList("regrowcolors", null);
+		if ( regrowColors == null || regrowColors.size() == 0 ) {
+			SheepFeed.log("config.yml is outdated, adding default regrowColor entries.");
+			regrowColors = new ArrayList<String>();
+			regrowColors.add("WHITE");
+			regrowColors.add("BLACK");
+			regrowColors.add("GRAY");
+			regrowColors.add("SILVER");
+			regrowColors.add("BROWN");
+			this.config.setProperty("regrowcolors", regrowColors);
+			config.save();
+		}
 	}
 	
 	/**
@@ -117,23 +132,12 @@ public class SheepFeedConfig {
 	 * @param dyeColor
 	 * @return True if it is a valid color to be regrown.
 	 */
-	public boolean isRegrowColor(DyeColor dyeColor) {
+	public synchronized boolean isRegrowColor(DyeColor dyeColor) {
 		List<String> regrowColors = this.config.getStringList("regrowcolors", null);
 		if ( regrowColors == null || regrowColors.size() == 0 ) {
-			SheepFeed.log("config.yml is outdated, missing 'regrowcolors' entry.");
-			// revert to old check, with brown added
-			switch ( dyeColor ) {
-			case WHITE:
-			case BLACK:
-			case GRAY:
-			case SILVER:
-			case BROWN:
-				return true;
-			default:
-				return false;
-			}
-		} else {
-			return regrowColors.contains(dyeColor.toString());
+			SheepFeed.log("Config does not contain any regrowColor entries, while the plugin should have populated the list.");
+			return false;
 		}
+		return regrowColors.contains(dyeColor.toString());
 	}
 }
