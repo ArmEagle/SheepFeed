@@ -67,19 +67,24 @@ public class SheepFeedEntityListener extends EntityListener{
 				// not already scheduled to grow and correct food, remove one item and set growing schedule
 				SheepFoodData foodData = sheepFeedPlugin.config.getFoodData(heldItemStack.getTypeId());
 				SheepFeed.debug(foodData.toString());
-				
-				// remove the food item
-				SheepFeed.debug(" amount of "+ heldItemStack.getType().toString() +" held: "+ heldItemStack.getAmount());
-				player.sendMessage("The sheep munches on the "+ foodData.name +" you fed it.");
-				// reduce stack by one, but if it's the last item, remove the whole stack
-				if ( heldItemStack.getAmount() == 1 ) {
-					player.getInventory().clear(player.getInventory().getHeldItemSlot());
+
+				// check for permission
+				if ( !this.sheepFeedPlugin.canFeed(player) ) {
+					player.sendMessage("The sheep doesn't trust you and won't eat your "+ foodData.name +".");
 				} else {
-					heldItemStack.setAmount(heldItemStack.getAmount()-1);
+					// remove the food item
+					SheepFeed.debug(" amount of "+ heldItemStack.getType().toString() +" held: "+ heldItemStack.getAmount());
+					player.sendMessage("The sheep munches on the "+ foodData.name +" you fed it.");
+					// reduce stack by one, but if it's the last item, remove the whole stack
+					if ( heldItemStack.getAmount() == 1 ) {
+						player.getInventory().clear(player.getInventory().getHeldItemSlot());
+					} else {
+						heldItemStack.setAmount(heldItemStack.getAmount()-1);
+					}
+					
+					// schedule growing of wool
+					this.sheepFeedPlugin.scheduleWoolGrowth(sheep, foodData);
 				}
-				
-				// schedule growing of wool
-				this.sheepFeedPlugin.scheduleWoolGrowth(sheep, foodData);
 				
 				// cancel the damage given
 				event.setDamage(0);

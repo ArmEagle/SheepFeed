@@ -8,6 +8,7 @@ import java.util.logging.Logger;
 
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 import org.bukkit.entity.Sheep;
 import org.bukkit.event.Event.Priority;
 import org.bukkit.event.Event.Type;
@@ -15,6 +16,10 @@ import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitScheduler;
+
+import com.nijiko.permissions.PermissionHandler;
+import com.nijikokun.bukkit.Permissions.Permissions;
+import org.bukkit.plugin.Plugin;
 
 /**
  * 
@@ -28,7 +33,6 @@ import org.bukkit.scheduler.BukkitScheduler;
  * a player hits one of these sheep (again), to remove that sheep and spawn a new one  
  */
 
-// TODO asynchronous madness?
 // TODO choose whether to make the listener or this main class heavy, not both
 
 public class SheepFeed extends JavaPlugin {
@@ -42,17 +46,9 @@ public class SheepFeed extends JavaPlugin {
 	public BukkitScheduler scheduler;
 	
 	// TODO, cancel wool grow task if sheep is gone:
-	/* TODO probably need to keep track of sheep?
-	 * - Now removing when they are fed (replaced) and when they die.
-	 * Do more checking of sheep being gone. Could probably do
-	 * too much removing. Second time feeding a naked sheep should work anyway. So, store
-	 * naked sheep in array list with time stamp? Then clear out after some time?
-	 */
-	// Store sheep that are hit (once)
-	// TODO lazy, probably not really memory efficient
-	//private ArrayList<Sheep> nakedSheep = new ArrayList<Sheep>();
 	private ConcurrentHashMap<Sheep, Integer> woolGrowingSheep = new ConcurrentHashMap<Sheep, Integer>();
-
+	
+	private PermissionHandler permissionHandler;
 	
 	@Override
 	public void onDisable() {
@@ -90,6 +86,8 @@ public class SheepFeed extends JavaPlugin {
 	        // register entities dieing
 	        pm.registerEvent(Type.ENTITY_DEATH, this.entityListener, Priority.Lowest, this);
 	        this.hasRegisteredEventListeners = true;
+	        
+	        this.setupPermissions();
         }
 	}
 	
@@ -97,6 +95,11 @@ public class SheepFeed extends JavaPlugin {
 	public boolean onCommand(CommandSender sender, Command command,	String label, String[] args) {
 		if ( this.isEnabled() ) {
 			if ( command.getName().equals("sheepfeed") ) {
+				// check for permission
+				if ( !this.canInfo(sender) ) {
+					sender.sendMessage("You are not allowed to use this command.");
+					return true;
+				}
 				// show naked/regrowing sheep counts
 				sender.sendMessage("There are "+ this.woolGrowingSheep.size() +" sheep regrowing their coat.");
 				// show food info
@@ -159,6 +162,42 @@ public class SheepFeed extends JavaPlugin {
 		SheepFeed.debug("Scheduling wool growth in "+ regrowthTime +" ticks for sheep ("+ sheep.getEntityId() +")");
 		//  add to woolGrowing
 		this.woolGrowingSheep.put(sheep, taskID);
+	}
+	
+	private void setupPermissions() {
+		Plugin permissionsPlugin = this.getServer().getPluginManager().getPlugin("Permissions");
+
+		if (this.permissionHandler == null) {
+			if (permissionsPlugin != null) {
+				this.permissionHandler = ((Permissions) permissionsPlugin).getHandler();
+				SheepFeed.log("Permission system detected.");
+			} else {
+				SheepFeed.log("Permission system not detected, defaulting to anyone.");
+			}
+		}
+	}
+	public boolean canFeed(CommandSender sender) {
+		if ( sender instanceof Player ) {
+			return this.hasPermission((Player)sender, "SheepFeed.feed", false); // fallback: everyone should be able to feed
+		}
+		return false; // can nnot feed from console
+	}
+	public boolean canInfo(CommandSender sender) {
+		if ( sender instanceof Player ) {
+			return this.hasPermission((Player)sender, "SheepFeed.info", true); // fallback: only ops
+		}
+		return true; // can info from console 
+	}
+	private boolean hasPermission(Player player, String node, boolean needsOp) {
+		if ( this.permissionHandler != null ) {
+			return this.permissionHandler.has(player, node);
+		} else {
+			if ( needsOp ) {
+				return player.isOp();
+			} else {
+				return true;
+			}
+		}
 	}
 	
 	public static void debug(String string) {
