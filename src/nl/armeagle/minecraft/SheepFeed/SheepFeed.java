@@ -72,7 +72,6 @@ public class SheepFeed extends JavaPlugin {
 	@Override
 	public void onEnable() {		
 		PluginDescriptionFile pdfFile = this.getDescription();
-        log.info( pdfFile.getName() + " version " + pdfFile.getVersion() + " by "+ pdfFile.getAuthors().get(0) +" is enabled!" );
 
         // load configuration, this way dis&enabling the plugin will read changes in the config file
 		this.config = new SheepFeedConfig(this);
@@ -89,6 +88,7 @@ public class SheepFeed extends JavaPlugin {
 	        
 	        this.setupPermissions();
         }
+        log.info( pdfFile.getName() + " version " + pdfFile.getVersion() + " by "+ pdfFile.getAuthors().get(0) +" is enabled!" );
 	}
 	
 	@Override
@@ -170,33 +170,29 @@ public class SheepFeed extends JavaPlugin {
 		if (this.permissionHandler == null) {
 			if (permissionsPlugin != null) {
 				this.permissionHandler = ((Permissions) permissionsPlugin).getHandler();
-				SheepFeed.log("Permission system detected.");
+				SheepFeed.log("Permissions plugin detected.");
 			} else {
-				SheepFeed.log("Permission system not detected, defaulting to anyone.");
+				SheepFeed.log("Permissions plugin not detected, defaulting to Bukkit's built-in system.");
 			}
 		}
 	}
 	public boolean canFeed(CommandSender sender) {
 		if ( sender instanceof Player ) {
-			return this.hasPermission((Player)sender, "SheepFeed.feed", false); // fallback: everyone should be able to feed
+			return this.hasPermission((Player)sender, "SheepFeed.feed");
 		}
-		return false; // can nnot feed from console
+		return false; // can not feed from console
 	}
 	public boolean canInfo(CommandSender sender) {
 		if ( sender instanceof Player ) {
-			return this.hasPermission((Player)sender, "SheepFeed.info", true); // fallback: only ops
+			return this.hasPermission((Player)sender, "SheepFeed.info");
 		}
 		return true; // can info from console 
 	}
-	private boolean hasPermission(Player player, String node, boolean needsOp) {
+	private boolean hasPermission(Player player, String node) {
 		if ( this.permissionHandler != null ) {
 			return this.permissionHandler.has(player, node);
 		} else {
-			if ( needsOp ) {
-				return player.isOp();
-			} else {
-				return true;
-			}
+			return player.hasPermission(node);
 		}
 	}
 	
