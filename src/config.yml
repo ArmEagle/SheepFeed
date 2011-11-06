@@ -16,3 +16,9 @@ sheepfood:
         minticks: 300
         maxticks: 700
         healamount: 1
+regrowcolors:
+- WHITE
+- BLACK
+- GRAY
+- SILVER
+- BROWN

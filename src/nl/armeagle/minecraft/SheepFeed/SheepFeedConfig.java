@@ -1,15 +1,10 @@
 package nl.armeagle.minecraft.SheepFeed;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
-import java.util.ListIterator;
-
+import java.util.Map;
 import org.bukkit.DyeColor;
-import org.bukkit.util.config.Configuration;
 
 public class SheepFeedConfig {
 	public static final String configFileName = "config.yml";
@@ -18,76 +13,12 @@ public class SheepFeedConfig {
 	public static final int defHealAmount = 1;
 	
 	SheepFeed sheepFeedPlugin;
-	Configuration config;
 	
 	SheepFeedConfig(SheepFeed sheepFeedPlugin) {
 		this.sheepFeedPlugin = sheepFeedPlugin;
-		String configDir = "";
-		File configFile = null;
-		
-		// make folder in the plugins dir
-		try {
-			configDir = "plugins" + File.separator + this.sheepFeedPlugin.getDescription().getName() + File.separator;
-		} catch (Exception e) {
-            e.printStackTrace();
-        }
-		new File(configDir).mkdirs();
-		
-		// create file handle for config file
-		try {
-			configFile = new File(configDir + SheepFeedConfig.configFileName);
-		} catch (Exception e) {
-            e.printStackTrace();
-        }
-		// if does not exist, copy from the jar
-		if ( configFile != null && !configFile.exists() ) {
-			SheepFeed.debug(this.sheepFeedPlugin.getDescription().getName() +": configfile "+ configFile.getPath() +" does not exist yet");
-			InputStream input = this.getClass().getResourceAsStream("/" + SheepFeedConfig.configFileName);
-			if ( input != null ) {
-				FileOutputStream output = null;
 
-	            try {
-	                output = new FileOutputStream(configFile);
-	                byte[] buf = new byte[8192];
-	                int length = 0;
-	                while ((length = input.read(buf)) > 0) {
-	                    output.write(buf, 0, length);
-	                }
-	                SheepFeed.log("Default configuration file written: " + configFile.getPath());
-	            } catch (IOException e) {
-	                e.printStackTrace();
-	            } finally {
-	                try {
-	                    if (input != null) {
-	                        input.close();
-	                    }
-	                } catch (IOException e) {}
-
-	                try {
-	                    if (output != null) {
-	                        output.close();
-	                    }
-	                } catch (IOException e) {}
-	            }
-			}
-		}
-		this.config = new Configuration(configFile);
-		this.config.load();
-		
-
-		// Check for config to hold regrowColors
-		List<String> regrowColors = this.config.getStringList("regrowcolors", null);
-		if ( regrowColors == null || regrowColors.size() == 0 ) {
-			SheepFeed.log("config.yml is outdated, adding default regrowColor entries.");
-			regrowColors = new ArrayList<String>();
-			regrowColors.add("WHITE");
-			regrowColors.add("BLACK");
-			regrowColors.add("GRAY");
-			regrowColors.add("SILVER");
-			regrowColors.add("BROWN");
-			this.config.setProperty("regrowcolors", regrowColors);
-			config.save();
-		}
+		this.sheepFeedPlugin.getConfig().options().copyDefaults(true);
+		this.sheepFeedPlugin.saveConfig();
 	}
 	
 	/**
@@ -97,10 +28,10 @@ public class SheepFeedConfig {
 	 */
 	public SheepFoodData getFoodData(int materialID) {
 		// this sucks, but at least it doesn't give any warnings
-		String name = this.config.getString("sheepfood.id"+ materialID +".name");
-		int minticks = this.config.getInt("sheepfood.id"+ materialID +".minticks", SheepFeedConfig.defMinTicks);
-		int maxticks = this.config.getInt("sheepfood.id"+ materialID +".maxticks", SheepFeedConfig.defMaxTicks);
-		int healamount = this.config.getInt("sheepfood.id"+ materialID +".healamount", SheepFeedConfig.defHealAmount);
+		String name = sheepFeedPlugin.getConfig().getString("sheepfood.id"+ materialID +".name");
+		int minticks = sheepFeedPlugin.getConfig().getInt("sheepfood.id"+ materialID +".minticks", SheepFeedConfig.defMinTicks);
+		int maxticks = sheepFeedPlugin.getConfig().getInt("sheepfood.id"+ materialID +".maxticks", SheepFeedConfig.defMaxTicks);
+		int healamount = sheepFeedPlugin.getConfig().getInt("sheepfood.id"+ materialID +".healamount", SheepFeedConfig.defHealAmount);
 		return new SheepFoodData(name, minticks, maxticks, healamount);
 	}
 	
@@ -110,16 +41,17 @@ public class SheepFeedConfig {
 	 * @return
 	 */
 	public boolean isSheepFood(int materialID) {
-		return this.config.getKeys("sheepfood").contains("id"+ materialID);
+		Map<String, Object> sheepFood = sheepFeedPlugin.getConfig().getConfigurationSection("sheepfood").getValues(true);
+		return sheepFood.containsKey("id"+ materialID);
 	}
 	/**
 	 * Return a list of food IDs
 	 * @return
 	 */
 	public List<Integer> getFoodIDs() {
-		List<String> foodIdStrings = this.config.getKeys("sheepfood");
+		Map<String, Object> foodIdStrings = sheepFeedPlugin.getConfig().getConfigurationSection("sheepfood").getValues(false);
 		List<Integer> foodIDs = new ArrayList<Integer>();
-		ListIterator<String> foodIdStrIter = foodIdStrings.listIterator();
+		Iterator<String> foodIdStrIter = foodIdStrings.keySet().iterator();
 		while ( foodIdStrIter.hasNext() ) {
 			String foodElement = foodIdStrIter.next();
 			foodIDs.add(Integer.parseInt(foodElement.replace("id", "")));
@@ -133,7 +65,8 @@ public class SheepFeedConfig {
 	 * @return True if it is a valid color to be regrown.
 	 */
 	public synchronized boolean isRegrowColor(DyeColor dyeColor) {
-		List<String> regrowColors = this.config.getStringList("regrowcolors", null);
+		@SuppressWarnings("unchecked")
+		List<String> regrowColors = sheepFeedPlugin.getConfig().getList("regrowcolors", null);
 		if ( regrowColors == null || regrowColors.size() == 0 ) {
 			SheepFeed.log("Config does not contain any regrowColor entries, while the plugin should have populated the list.");
 			return false;
