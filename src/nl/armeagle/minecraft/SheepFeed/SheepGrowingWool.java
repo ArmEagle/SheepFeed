@@ -31,7 +31,7 @@ public class SheepGrowingWool implements Runnable {
 		// give back wool
 		sheep.setSheared(false);
 		// heal sheep based on type of food
-		sheep.setHealth( Math.min(sheep.getHealth() + this.healamount, 20) );
+		sheep.setHealth( Math.min(sheep.getHealth() + this.healamount, sheep.getMaxHealth()) );
 		
 		// remove sheep from growing list
 		this.sheepFeedPlugin.removeWoolGrowingSheep(sheep);
