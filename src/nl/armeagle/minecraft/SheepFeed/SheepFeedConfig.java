@@ -65,8 +65,7 @@ public class SheepFeedConfig {
 	 * @return True if it is a valid color to be regrown.
 	 */
 	public synchronized boolean isRegrowColor(DyeColor dyeColor) {
-		@SuppressWarnings("unchecked")
-		List<String> regrowColors = sheepFeedPlugin.getConfig().getList("regrowcolors", null);
+		List<String> regrowColors = sheepFeedPlugin.getConfig().getStringList("regrowcolors");
 		if ( regrowColors == null || regrowColors.size() == 0 ) {
 			SheepFeed.log("Config does not contain any regrowColor entries, while the plugin should have populated the list.");
 			return false;

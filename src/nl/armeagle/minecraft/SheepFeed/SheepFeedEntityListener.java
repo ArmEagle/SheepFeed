@@ -3,14 +3,15 @@ package nl.armeagle.minecraft.SheepFeed;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Sheep;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.EntityDeathEvent;
-import org.bukkit.event.entity.EntityListener;
 import org.bukkit.inventory.ItemStack;
 
-public class SheepFeedEntityListener extends EntityListener{
+public class SheepFeedEntityListener implements Listener{
 
 	private SheepFeed sheepFeedPlugin;
 	
@@ -25,6 +26,7 @@ public class SheepFeedEntityListener extends EntityListener{
 	 * 
 	 * @param event EntityDamageEvent
 	 */
+	@EventHandler
 	public void onEntityDamage(EntityDamageEvent event) {
 		// do not act when disabled  TODO, use unregister when available
 		if ( !this.sheepFeedPlugin.isEnabled() ) {
@@ -97,6 +99,7 @@ public class SheepFeedEntityListener extends EntityListener{
 	 * 
 	 * @param event EntityDeathEvent	
 	 */
+	@EventHandler
 	public void onEntityDeath(EntityDeathEvent event) {
 		// do not act when disabled  TODO, use unregister when available
 		if ( !this.sheepFeedPlugin.isEnabled() ) {

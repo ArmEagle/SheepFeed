@@ -10,8 +10,6 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Sheep;
-import org.bukkit.event.Event.Priority;
-import org.bukkit.event.Event.Type;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -80,10 +78,8 @@ public class SheepFeed extends JavaPlugin {
         //TODO will need to unregister the listeners when that feature is added 
         if ( !this.hasRegisteredEventListeners ) {
 	        PluginManager pm = this.getServer().getPluginManager();
-	        // register entities receiving damage
-	        pm.registerEvent(Type.ENTITY_DAMAGE, this.entityListener, Priority.Lowest, this);
-	        // register entities dieing
-	        pm.registerEvent(Type.ENTITY_DEATH, this.entityListener, Priority.Lowest, this);
+	        // register entities receiving damage and dieing
+	        pm.registerEvents(this.entityListener, this);
 	        this.hasRegisteredEventListeners = true;
 	        
 	        this.setupPermissions();
